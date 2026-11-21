@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html lang="es-419">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ASISTENTE BAV · Tu Mentor de Seguridad y Datos</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Fuente Inter y Plus Jakarta Sans para máxima legibilidad y estilo educativo moderno -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          colors: {
+            bav: {
+              50: '#f0f7ff',
+              100: '#e0effe',
+              200: '#bae0fd',
+              500: '#2563eb',
+              600: '#1d4ed8',
+              700: '#1e40af',
+            },
+            mint: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* Animaciones suaves para el avatar y ondas de voz */
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-4px); }
+    }
+    @keyframes pulseRing {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      70% { transform: scale(1.28); opacity: 0; }
+      100% { transform: scale(1.28); opacity: 0; }
+    }
+    @keyframes soundWave {
+      0%, 100% { height: 6px; }
+      50% { height: 22px; }
+    }
+    @keyframes typingDot {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    .avatar-float {
+      animation: floatSlow 3.5s ease-in-out infinite;
+    }
+    .listening-ring::before {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 9999px;
+      background: rgba(16, 185, 129, 0.35);
+      animation: pulseRing 1.5s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+      z-index: 0;
+    }
+    .wave-bar {
+      width: 4px;
+      border-radius: 9999px;
+      background-color: #10b981;
+      animation: soundWave 0.9s ease-in-out infinite;
+    }
+    .wave-bar:nth-child(2) { animation-delay: 0.15s; }
+    .wave-bar:nth-child(3) { animation-delay: 0.3s; }
+    .wave-bar:nth-child(4) { animation-delay: 0.45s; }
+    .wave-bar:nth-child(5) { animation-delay: 0.2s; }
+
+    .typing-dot {
+      animation: typingDot 1.3s infinite ease-in-out;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    /* Personalización discreta de barra de desplazamiento */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-bav-50 via-white to-mint-50 text-slate-800 min-h-screen flex flex-col antialiased selection:bg-bav-200 selection:text-bav-700">
+
+  <!-- Banner de notificación no intrusivo (reemplaza alert) -->
+  <div id="toastBanner" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 hidden max-w-md w-[92%] bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl flex items-center justify-between gap-3 text-sm transition-all">
+    <div class="flex items-center gap-2.5">
+      <span id="toastIcon" class="text-mint-400 text-lg">💡</span>
+      <span id="toastText" class="leading-snug">Mensaje informativo</span>
+    </div>
+    <button onclick="hideToast()" class="text-slate-400 hover:text-white p-1 rounded-lg" aria-label="Cerrar aviso">✕</button>
+  </div>
+
+  <!-- Barra superior de navegación y controles de voz -->
+  <header class="bg-white/90 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+      <!-- Marca y título -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-bav-600 to-mint-500 flex items-center justify-center text-white font-display font-extrabold text-lg shadow-sm">
+          BAV
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-display font-bold text-slate-900 text-base sm:text-lg leading-tight">ASISTENTE BAV</h1>
+            <span class="hidden sm:inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-mint-100 text-mint-600">
+              5.° Año Técnico · Taller
+            </span>
+          </div>
+          <p class="text-xs text-slate-500">Tu guía paso a paso para cuidar y rescatar archivos</p>
+        </div>
+      </div>
+
+      <!-- Controles de voz y reinicio -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Selector de velocidad de voz -->
+        <button id="speedToggleBtn" onclick="toggleSpeechRate()" title="Cambiar velocidad de lectura"
+          class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200/80 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition active:scale-95">
+          <span>🐢/🐇</span>
+          <span id="speedLabel">Voz: Normal</span>
+        </button>
+
+        <!-- Activar / Desactivar voz automática -->
+        <button id="autoVoiceBtn" onclick="toggleAutoVoice()" title="Activar o silenciar la voz del tutor"
+          class="px-3 py-2 rounded-xl bg-mint-100 hover:bg-mint-200/70 text-mint-700 text-xs font-semibold flex items-center gap-1.5 transition active:scale-95">
+          <svg id="voiceOnIcon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+          </svg>
+          <svg id="voiceOffIcon" class="w-4 h-4 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+          </svg>
+          <span id="autoVoiceLabel">Voz Activa</span>
+        </button>
+
+        <!-- Botón nuevo caso -->
+        <button onclick="resetConversation()" title="Reiniciar charla y empezar un nuevo caso"
+          class="px-3 py-2 rounded-xl bg-bav-50 hover:bg-bav-100 text-bav-700 text-xs font-semibold flex items-center gap-1.5 transition active:scale-95">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <span class="hidden sm:inline">Nuevo caso</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contenedor principal -->
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-4 sm:py-6 grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+    <!-- Columna Izquierda / Superior: Avatar Interactivo + Ruta Pedagógica de 3 Etapas -->
+    <aside class="lg:col-span-4 flex flex-col gap-4">
+      
+      <!-- Tarjeta del Avatar Animado del ASISTENTE BAV -->
+      <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200/70 flex flex-col items-center text-center relative overflow-hidden">
+        <div class="absolute top-0 inset-x-0 h-20 bg-gradient-to-r from-bav-100/70 to-mint-100/70"></div>
+        
+        <!-- Contenedor del Avatar -->
+        <div id="avatarWrapper" class="relative mt-2 mb-3 w-24 h-24 rounded-full bg-white p-1.5 shadow-md flex items-center justify-center transition-all">
+          <div id="avatarCircle" class="w-full h-full rounded-full bg-gradient-to-br from-bav-500 to-mint-500 flex items-center justify-center avatar-float relative z-10">
+            <!-- Rostro amigable SVG -->
+            <svg class="w-14 h-14 text-white" viewBox="0 0 64 64" fill="none">
+              <!-- Antena -->
+              <line x1="32" y1="6" x2="32" y2="14" stroke="white" stroke-width="3" stroke-linecap="round"/>
+              <circle id="avatarAntenna" cx="32" cy="5" r="3.5" fill="#34d399"/>
+              <!-- Cabeza -->
+              <rect x="14" y="14" width="36" height="32" rx="12" fill="white" fill-opacity="0.18" stroke="white" stroke-width="2.5"/>
+              <!-- Ojos -->
+              <circle id="eyeLeft" cx="25" cy="28" r="3.2" fill="white"/>
+              <circle id="eyeRight" cx="39" cy="28" r="3.2" fill="white"/>
+              <!-- Sonrisa / Boca dinámica -->
+              <path id="avatarMouth" d="M25 36 Q32 42 39 36" stroke="white" stroke-width="2.8" stroke-linecap="round" fill="none"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Estado actual del Asistente -->
+        <div class="flex items-center gap-2 mb-1">
+          <span id="statusDot" class="w-2.5 h-2.5 rounded-full bg-mint-500"></span>
+          <span id="statusText" class="text-xs font-bold uppercase tracking-wider text-bav-700">Listo para escucharte</span>
+        </div>
+
+        <!-- Ondas animadas cuando habla o escucha -->
+        <div id="voiceWaves" class="h-6 flex items-center justify-center gap-1 opacity-0 transition-opacity duration-200">
+          <span class="wave-bar"></span>
+          <span class="wave-bar"></span>
+          <span class="wave-bar"></span>
+          <span class="wave-bar"></span>
+          <span class="wave-bar"></span>
+        </div>
+
+        <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+          No te tiro respuestas mágicas ni comandos para copiar: pensamos juntos paso a paso para que lo entiendas bien.
+        </p>
+
+        <!-- Botón para detener lectura en curso -->
+        <button id="stopSpeakingBtn" onclick="stopSpeaking()" class="hidden mt-3 px-3.5 py-1.5 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-semibold items-center gap-1.5 transition">
+          <span>⏹ Detener voz</span>
+        </button>
+      </div>
+
+      <!-- Tarjeta de Progreso Pedagógico (3 Etapas) -->
+      <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200/70">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="font-display font-bold text-sm text-slate-800 flex items-center gap-2">
+            <span>🧭</span> Ruta de Diagnóstico
+          </h2>
+          <span id="stepBadge" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-bav-100 text-bav-700">Etapa 1 de 3</span>
+        </div>
+
+        <div class="space-y-2.5">
+          <!-- Etapa 1 -->
+          <div id="stepCard1" class="p-3 rounded-2xl border-2 border-bav-500 bg-bav-50/70 transition-all">
+            <div class="flex items-center gap-2.5">
+              <div id="stepNum1" class="w-7 h-7 rounded-xl bg-bav-600 text-white font-bold text-xs flex items-center justify-center shrink-0">1</div>
+              <div>
+                <h3 class="text-xs font-bold text-slate-900">1. ¿Qué tan valioso es?</h3>
+                <p class="text-[11px] text-slate-600 leading-snug">Miramos qué archivos, cuentas o datos están en juego y qué tan importantes son.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Etapa 2 -->
+          <div id="stepCard2" class="p-3 rounded-2xl border border-slate-200 bg-slate-50/60 opacity-75 transition-all">
+            <div class="flex items-center gap-2.5">
+              <div id="stepNum2" class="w-7 h-7 rounded-xl bg-slate-300 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0">2</div>
+              <div>
+                <h3 class="text-xs font-bold text-slate-800">2. Cuidar sin tocar mal</h3>
+                <p class="text-[11px] text-slate-500 leading-snug">Evitamos dañar lo que queda, cuidamos el equipo y frenamos cualquier contagio.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Etapa 3 -->
+          <div id="stepCard3" class="p-3 rounded-2xl border border-slate-200 bg-slate-50/60 opacity-75 transition-all">
+            <div class="flex items-center gap-2.5">
+              <div id="stepNum3" class="w-7 h-7 rounded-xl bg-slate-300 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0">3</div>
+              <div>
+                <h3 class="text-xs font-bold text-slate-800">3. Pensar el camino</h3>
+                <p class="text-[11px] text-slate-500 leading-snug">Analizamos qué estrategia o tipo de herramienta conviene aplicar con criterio.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- Columna Derecha: Área de Conversación + Entrada Multimodal (Voz y Texto) -->
+    <section class="lg:col-span-8 bg-white rounded-3xl shadow-sm border border-slate-200/70 flex flex-col h-[74vh] sm:h-[78vh] overflow-hidden">
+      
+      <!-- Historial de mensajes -->
+      <div id="chatMessages" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+        <!-- Mensaje de bienvenida inicial generado por JS -->
+      </div>
+
+      <!-- Escenarios rápidos interactivos ("Casos del taller") -->
+      <div id="quickChipsContainer" class="px-4 sm:px-6 pt-2.5 pb-1 bg-slate-50/80 border-t border-slate-100">
+        <div class="flex items-center justify-between mb-1.5">
+          <p class="text-[11px] font-bold text-bav-700 uppercase tracking-wider">🛠️ Casos del taller (tocá uno para practicar o hablá con el micrófono):</p>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pb-2">
+          <button onclick="sendQuickPrompt('Me apareció un cartel pidiendo rescate y no puedo abrir mis archivos')"
+            class="text-left text-xs bg-white hover:bg-bav-50 text-slate-700 hover:text-bav-700 border border-slate-200 hover:border-bav-300 px-3 py-2 rounded-2xl transition shadow-2xs active:scale-95 flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold text-[10px] shrink-0">Caso 1</span>
+            <span class="font-medium truncate">Archivo cifrado / Ransomware</span>
+          </button>
+          <button onclick="sendQuickPrompt('Conecté un pendrive o disco y no me deja abrirlo o desapareció una carpeta')"
+            class="text-left text-xs bg-white hover:bg-bav-50 text-slate-700 hover:text-bav-700 border border-slate-200 hover:border-bav-300 px-3 py-2 rounded-2xl transition shadow-2xs active:scale-95 flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded-full bg-bav-100 text-bav-800 font-semibold text-[10px] shrink-0">Caso 2</span>
+            <span class="font-medium truncate">Pendrive o disco que no abre</span>
+          </button>
+          <button onclick="sendQuickPrompt('Creo que entró un programa raro o un enlace engañoso y la compu anda rara')"
+            class="text-left text-xs bg-white hover:bg-bav-50 text-slate-700 hover:text-bav-700 border border-slate-200 hover:border-bav-300 px-3 py-2 rounded-2xl transition shadow-2xs active:scale-95 flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 font-semibold text-[10px] shrink-0">Caso 3</span>
+            <span class="font-medium truncate">Posible infección o toma de control</span>
+          </button>
+          <button onclick="sendQuickPrompt('Tengo fotos, cuentas y trabajos importantes en mi celular y compu y quiero cuidarlos')"
+            class="text-left text-xs bg-white hover:bg-bav-50 text-slate-700 hover:text-bav-700 border border-slate-200 hover:border-bav-300 px-3 py-2 rounded-2xl transition shadow-2xs active:scale-95 flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded-full bg-mint-100 text-mint-800 font-semibold text-[10px] shrink-0">Caso 4</span>
+            <span class="font-medium truncate">Celular o compu con datos sensibles</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Barra de entrada de Voz y Texto -->
+      <div class="p-3 sm:p-4 bg-white border-t border-slate-200/80">
+        <!-- Indicador de transcripción en vivo cuando habla el estudiante -->
+        <div id="liveTranscriptBox" class="hidden mb-2 px-3.5 py-2 rounded-2xl bg-mint-50 border border-mint-200 text-xs text-mint-800 flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-mint-500 animate-ping"></span>
+            <span id="liveTranscriptText" class="italic">Te estoy escuchando... hablá tranquilo.</span>
+          </div>
+          <button onclick="stopListening()" class="text-[11px] font-bold text-mint-700 underline">Listo</button>
+        </div>
+
+        <form id="chatForm" onsubmit="handleFormSubmit(event)" class="flex items-center gap-2 sm:gap-3">
+          <!-- Botón grande de Micrófono (Speech-to-Text) -->
+          <button type="button" id="micButton" onclick="toggleMicrophone()"
+            title="Hablar con ASISTENTE BAV"
+            class="relative shrink-0 w-12 h-12 sm:w-13 sm:h-13 rounded-2xl bg-mint-500 hover:bg-mint-600 text-white flex items-center justify-center shadow-md transition active:scale-95 focus:outline-none focus:ring-4 focus:ring-mint-200">
+            <svg class="w-6 h-6 relative z-10" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
+            </svg>
+          </button>
+
+          <!-- Caja de escritura tradicional -->
+          <div class="flex-1 relative">
+            <input id="userInput" type="text" autocomplete="off"
+              placeholder="Escribí acá tu duda o tocá el micrófono verde para hablar..."
+              class="w-full pl-4 pr-12 py-3.5 rounded-2xl bg-slate-100 focus:bg-white border border-transparent focus:border-bav-400 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-bav-100 transition" />
+          </div>
+
+          <!-- Botón de Enviar -->
+          <button type="submit" id="sendButton"
+            title="Enviar mensaje"
+            class="shrink-0 px-4 sm:px-5 h-12 sm:h-13 rounded-2xl bg-bav-600 hover:bg-bav-700 disabled:bg-slate-300 text-white font-semibold text-sm flex items-center justify-center gap-1.5 shadow-sm transition active:scale-95">
+            <span class="hidden sm:inline">Enviar</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+            </svg>
+          </button>
+        </form>
+      </div>
+
+    </section>
+  </main>
+
+  <script>
+    // =========================================================================
+    // CONFIGURACIÓN PEDAGÓGICA Y MOTOR SOCRÁTICO CONFIABLE (ESPAÑOL ARGENTINA)
+    // =========================================================================
+    const apiKey = ""; // Opcional: si no está configurada, usa el motor socrático local retroalimentado
+    const GEMINI_MODEL = "gemini-3-flash-preview";
+
+    const SYSTEM_PROMPT = `
+Eres "ASISTENTE BAV", un mentor pedagógico cercano, paciente, claro y motivador para estudiantes de 5.° año de escuela técnica en Argentina que tienen pocos conocimientos previos sobre seguridad informática y recuperación o cuidado de datos.
+
+REGLAS ESTRICTAS DE MENTORÍA (NUNCA ROMPER):
+1. JAMÁS des respuestas directas, scripts completos, códigos ni comandos listos para copiar y pegar. Nunca escribas comandos de consola, rutas de sistema para ejecutar ni recetas mágicas.
+2. Ante consultas sobre discos cifrados o bloqueados por un programa secuestrador (ransomware), pérdida de particiones o carpetas, archivos borrados o infecciones/malware, respondé SIEMPRE con preguntas orientadoras que inviten a reflexionar sobre el concepto antes de tocar el disco.
+3. Seguí SIEMPRE este orden pedagógico de 3 etapas:
+   - Etapa 1 (Valor y criticidad): primero evaluá qué tan valiosos o importantes son los archivos, fotos, cuentas, trabajos o datos institucionales/personales en juego (y si ya existe alguna copia o respaldo en otro lado).
+   - Etapa 2 (Cuidar sin tocar mal): recién después pensá cómo cuidar y no alterar lo que queda (no guardar cosas nuevas encima, no enchufar pendrives o USB desconocidos, desconectar de internet si hay algo raro, mantener contraseñas/bloqueos en compus y celulares usados para estudio o trabajo, cuidar la seguridad física de los equipos y lugares donde se guardan).
+   - Etapa 3 (Pensar el camino): recién cuando se reflexionó sobre las etapas 1 y 2, orientá qué tipo de estrategia o familia de herramientas conviene analizar y por qué, sin dar comandos ni soluciones directas.
+
+4. ESPAÑOL DE ARGENTINA Y LENGUAJE ACCESIBLE:
+   - Hablá en español de Argentina con voseo natural y cercano ("mirá", "fijate", "pensá", "¿tenés?", "contame", "tranqui"), sin caer en caricaturas exageradas ni lunfardo forzado.
+   - Evitá tecnicismos difíciles sin traducirlos. Si aparece un concepto como cifrado, partición, malware, phishing o respaldo, explicalo con ejemplos simples de la vida cotidiana:
+     * Respaldo / copia de seguridad -> "una copia guardada en otro lado, como una fotocopia de un apunte importante".
+     * Cifrado / disco bloqueado -> "como cuando le ponen un candado digital a tus carpetas y sin la llave correcta no se pueden leer".
+     * Programa malicioso / infección -> "un programa intruso que entra sin permiso y puede trabar archivos o intentar tomar control del equipo".
+     * Pendrive o USB sospechoso -> "una llave externa que, si viene de cualquier lado o está infectada, puede pasarle un problema a la compu".
+   - Retroalimentá con criterios prácticos del Manual de Ciberseguridad para Organizaciones de la Sociedad Civil: proteger con clave o código todos los dispositivos (incluidos celulares usados para estudiar o trabajar), usar bloqueo de disco/cifrado cuando hace falta, cuidar los equipos físicamente y no dejarlos tirados ni sin llave, desconfiar de enlaces o mensajes engañosos que piden datos o apuran a actuar, mantener sistemas actualizados y evitar conectar USB dudosos.
+   - Cuando el alumno pregunte por conceptos, explicá con ejemplos simples los temas del material del taller: la tríada CIA (confidencialidad, integridad y disponibilidad), contraseñas robustas (largas, aleatorias y únicas por servicio), verificación en dos pasos, copias de seguridad, actualizaciones y antivirus, cifrado de disco, y las señales de phishing (remitente raro, urgencia, errores, enlaces que no coinciden).
+    - Si la pregunta no tiene relación con ciberseguridad ni con el material del taller (por ejemplo "amor", deportes o temas ajenos), indicá cortésmente que no contás con ese tipo de información y redirigí al alumno al inicio: ofrecé los cuatro casos del taller (archivo cifrado/ransomware, pendrive que no abre, posible infección y protección de datos en celular o compu) y pedile que te cuente qué le pasa con su equipo.
+
+5. FORMATO IDEAL PARA VOZ Y LECTURA:
+   - Escribí respuestas breves, cálidas y claras (2 o 3 párrafos cortos, entre 45 y 90 palabras) para que se entiendan al leerlas y al escucharlas en voz alta.
+   - Cerrá siempre con UNA pregunta orientadora sencilla que invite al alumno a pensar el siguiente paso.
+`;
+
+    // =========================================================================
+    // BASE DE CONOCIMIENTO PEDAGÓGICO - extraída de los PDFs del taller:
+    //  - "Los tres pilares de la ciberseguridad" y "Material dos niveles" (tríada CIA)
+    //  - "Guía de ciberseguridad para todos" (INCIBE): contraseñas, 2FA, antivirus,
+    //    navegación segura, phishing, compras online, redes sociales y denuncia
+    //  - "Cybersecurity Handbook for Civil Society Organizations": cuentas y
+    //    dispositivos, cifrado, robo/pérdida y respuesta ante incidentes
+    // Cada tema trae: keywords (sin tildes), concept (respuesta a preguntas
+    // directas del alumno) y stage1/stage2/stage3 (guía socrática por etapa).
+    // =========================================================================
+    const KNOWLEDGE_TOPICS = {
+      usbStorage: {
+        keywords: ["pendrive","usb","disco","carpeta","particion","no me deja abrirlo","desaparec","borr","formatear","memoria","tarjeta sd"],
+        concept: "Un pendrive o disco que no abre puede tener un fallo lógico, archivos ocultos o una carpeta perdida. Antes de probar cualquier cosa, acordate qué había ahí adentro: como un apunte clave sin fotocopia, lo que no tenés copiado corre riesgo con cada intento apurado.",
+        ask: "¿Qué es lo más importante que tenía ese disco y ya tenés copia en otro lado?",
+        stage1: "Cuando no se abre un pendrive, un disco o desaparece una carpeta, lo primero es frenar y mirar qué hay ahí adentro: **trabajos del taller, fotos, documentos o datos importantes**, y si existe alguna copia de seguridad en otro lado (como una fotocopia de un apunte clave).\n\nPensá qué pasaría si se pierde o se sobrescribe esa carpeta. ¿Qué tan valioso es lo que estaba guardado ahí y sabés si tenés una copia en otro dispositivo o en la nube?",
+        stage2: "En el taller vemos que tocar de apuro o conectar ese pendrive en varias compus puede empeorar las cosas o contagiar otros equipos si hubo un programa intruso. Cuidar lo que queda significa no guardar archivos nuevos encima y evitar enchufar memorias USB dudosas.\n\nSi el disco o pendrive se desconectó o dejó de responder, ¿qué creés que podría pasar si empezás a copiar cosas nuevas arriba de ese mismo espacio?",
+        stage3: "Ya miramos qué tan importante es la información y cómo evitar alterar o contagiar lo que queda. Recién ahora conviene pensar en qué tipo de camino tomar: revisar en un entorno seguro si el problema es de acceso o de archivos ocultos o dañados, siempre sin apurarte a borrar.\n\nSegún lo que observaste hasta ahora, ¿qué creés que convendría analizar primero antes de tocar el contenido del disco?"
+      },
+      ransomwareLock: {
+        keywords: ["rescate","cifrado","cifrar","candado","ransomware","bitlocker","filevault","bloqueado","llave","extorsion"],
+        concept: "El ransomware es un programa intruso que cifra tus archivos -como ponerles un candado digital- y pide rescate. Afecta la disponibilidad (no se abren) y a veces la confidencialidad, porque primero roban datos. Casos reales: LockBit y el ataque a Change Healthcare en 2024.",
+        ask: "¿Qué archivos te preocupa más perder y tenés alguna copia previa?",
+        stage1: "Cuando aparece un cartel pidiendo rescate o los archivos quedan trabados con un candado digital, lo primero es evaluar **qué información está en juego** (trabajos, datos personales o institucionales) y si hay copias guardadas en otro lugar que no estén conectadas al mismo equipo.\n\nAntes de pensar en destrabar nada, ¿qué archivos te preocupa más perder y tenés alguna copia de respaldo hecha antes del problema?",
+        stage2: "Un programa malicioso que bloquea archivos puede seguir actuando o pasar a otros dispositivos si queda conectado a la red o a otros USB. Por eso, cuidar el equipo implica frenar el contagio y no tocar a ciegas lo que quedó.\n\nSi el equipo está conectado a internet o a otros discos, ¿por qué creés que conviene frenar esa conexión antes de seguir mirando?",
+        stage3: "Ya evaluamos la importancia de los datos y cómo evitar que el problema se extienda. El siguiente paso conceptual es distinguir si se trata de un bloqueo de seguridad propio del dispositivo o de un ataque, y revisar si existen copias previas limpias.\n\n¿Qué te parece más seguro verificar primero: si hay una copia limpia guardada aparte o qué provocó el bloqueo?"
+      },
+      malwareInfection: {
+        keywords: ["virus","malware","spyware","programa raro","infeccion","toma de control","hack","pirata","compu rara","anda rara","keylogger","troyano","botnet","rootkit"],
+        concept: "Un malware es un programa intruso que entra sin permiso: puede trabar archivos, espiar lo que escribís o tomar control del equipo. Casi siempre entra por adjuntos, enlaces o programas descargados de sitios raros.",
+        ask: "¿Notaste algo raro después de abrir algo o descargar un programa?",
+        stage1: "Cuando la compu o el celu andan raros tras un enlace engañoso o un programa sospechoso, el manual sugiere revisar primero **qué cuentas o datos personales están expuestos** (correo, redes, trabajos o claves) y si alguien pudo haber pedido datos bajo engaño.\n\n¿Entraste a algún enlace raro, compartiste una clave o notaste algo distinto en tus cuentas o en el equipo?",
+        stage2: "Proteger los dispositivos y las cuentas significa mantener bloqueos con clave o código, no aceptar ventanas emergentes ni programas de sitios dudosos, mantener el sistema actualizado y cuidar el equipo para que nadie acceda sin permiso.\n\nSi sospechás que entró un programa intruso, ¿qué conviene evitar hacer con tus contraseñas y con las conexiones del equipo por ahora?",
+        stage3: "Ya identificamos qué datos cuidar y cómo frenar riesgos en cuentas y dispositivos. Ahora corresponde pensar en analizar qué señales muestra el equipo y reforzar las defensas básicas (como claves distintas y verificación en dos pasos) sin hacer cambios a ciegas.\n\n¿Qué señal te llama más la atención de lo que está pasando ahora en el equipo?"
+      },
+      phishingScam: {
+        keywords: ["phishing","vishing","smishing","enlace","enganoso","engano","link","suplantacion","remitente","mensaje raro"],
+        concept: "El phishing es una estafa donde se hacen pasar por una entidad de confianza para que entregues datos o hagas clic. La guía marca seis señales: remitente raro, asunto llamativo, apuro, errores, enlaces que no coinciden y adjuntos sospechosos.",
+        ask: "¿Te llegó algo pidiendo datos o apuro? ¿Coincide el remitente con quien dice ser?",
+        stage1: "Si ese mensaje o enlace llegara a funcionar, ¿qué cuentas, trabajos o datos personales quedarían expuestos? Evaluemos qué tan valioso es lo que está en juego antes de tocar nada: ¿qué te dolería más que alguien viera o perdiera?",
+        stage2: "Para cuidar lo que queda: no sigas el mensaje, no compartas datos y protegé las contraseñas desde otro lugar si ya hiciste clic. Si tu correo o redes quedaron expuestos, ¿qué deberías asegurar primero: cambiar las claves o revisar quién entró?",
+        stage3: "Ya sabés qué datos importan y qué evitar. Ahora pensemos el camino: verificar si la cuenta fue afectada (sesiones, actividad) y reforzar con verificación en dos pasos. ¿Qué señal mirarías primero para saber si entraron a tu cuenta?"
+      },
+      ciaTriad: {
+        keywords: ["cia","tria","confidencial","integridad","disponibilidad","nist","iso 27001","hash","sha","pilar"],
+        concept: "Los tres pilares (tríada CIA): confidencialidad -solo personas autorizadas ven los datos-, integridad -sin cambios no autorizados, se chequea con hashes como SHA-256-, y disponibilidad -los archivos funcionan cuando los necesitás, con copias de seguridad-.",
+        ask: "De los tres pilares, ¿cuál creés que está en riesgo en tu caso y por qué?",
+        stage1: "Mirá tu caso con la tríada CIA en la mano. Lo primero es identificar qué pilar está golpeado: si nadie puede abrir los archivos, ¿se cae la disponibilidad, la integridad o la confidencialidad? Pensá en qué significa cada uno para tu trabajo del taller.",
+        stage2: "Proteger sin empeorar: para conservar la integridad no sobrescribas nada, y para la disponibilidad necesitás una copia aparte. Si seguís usando el equipo con el problema, ¿qué pilar corrés más riesgo de perder y por qué?",
+        stage3: "Con el pilar identificado, pensemos la estrategia: respaldos para la disponibilidad, comprobación de cambios para la integridad, contraseñas y cifrado para la confidencialidad. ¿Qué revisarías primero y por qué?"
+      },
+      passwords: {
+        keywords: ["contrasena","password","gestor","robusta","olvide la clave","olvide mi clave","misma clave","cambiar la clave"],
+        concept: "Una contraseña robusta tiene tres claves: longitud (16 caracteres o 3 a 4 palabras al azar), aleatoriedad -nada de fechas ni nombres- y singularidad, una distinta por servicio. Un gestor de contraseñas las guarda todas y solo recordás la principal.",
+        ask: "¿Cuántas cuentas usan hoy la misma contraseña y qué tan larga es la que más usás?",
+        stage1: "Empecemos por lo valioso: ¿cuántas cuentas comparten hoy la misma contraseña? Si roban una, todas quedan expuestas -correo, redes, trabajos-. ¿Qué cuenta te dolería más que alguien pudiera abrir sin tu permiso?",
+        stage2: "Cuidar sin tocar mal: mientras pensamos la clave, evitá repetirla ni compartirla con nadie. Si alguien la vio o pudo usarla, ¿qué deberías hacer con esas cuentas antes de crear una nueva contraseña?",
+        stage3: "Ya viste qué cuentas importan y qué evitar. El camino: una frase larga de palabras al azar o un gestor, más verificación en dos pasos. ¿Por qué te parece que una contraseña larga y única protege más que una corta con símbolos raros?"
+      },
+      twoFactor: {
+        keywords: ["verificacion","dos pasos","dos factores","2fa","authenticator","codigo temporal","doble verificacion","segundo factor"],
+        concept: "La verificación en dos pasos agrega un segundo control al iniciar sesión: además de la contraseña, necesitás un código que cambia cada pocos segundos (app como Google o Microsoft Authenticator). Aunque roben tu clave, sin ese código no entran.",
+        ask: "¿En qué cuentas te gustaría activarla primero y por qué?",
+        stage1: "Antes de activarla, valoremos: ¿cuáles son tus cuentas más valiosas -correo, redes, banco- donde un robo dolería más? ¿Cuál de esas hoy se abre solo con contraseña?",
+        stage2: "Activarla es un cuidado que no rompe nada: protege el acceso sin tocar el resto. ¿Qué necesitás a mano para activarla sin quedarte afuera: el teléfono y la app instalada?",
+        stage3: "Con las cuentas elegidas, pensemos el camino: preferir la app autenticadora antes que el SMS y guardar los códigos de recuperación en un lugar seguro. ¿Qué harías si perdés el celular con la app adentro?"
+      },
+      updatesAntivirus: {
+        keywords: ["actualizar","actualizacion","antivirus","defender","play protect","parche","desactualizado"],
+        concept: "Las actualizaciones cierran agujeros de seguridad que los ciberdelincuentes aprovechan, y el antivirus (Windows Defender en Windows, Play Protect en Android) detecta y elimina infecciones. Son mantenimiento preventivo: revisar el equipo antes de que se rompa.",
+        ask: "¿Hace cuánto que actualizás el equipo y cómo sabés si el antivirus está activo?",
+        stage1: "Pensemos qué protege hoy tu equipo: si está desactualizado o sin antivirus activo, ¿qué tan valioso es lo que guardás ahí -trabajos, fotos, cuentas- y qué tan probable es que alguien aproveche ese descuido?",
+        stage2: "Cuidar sin tocar mal: actualizar es seguro si lo hacés desde los ajustes oficiales y con calma. ¿Qué te frena hoy a actualizar: miedo a que cambie algo, no saber dónde está la opción o falta de tiempo?",
+        stage3: "Ya viste qué hay que proteger y cómo hacerlo sin riesgo. El camino: activar actualizaciones automáticas y hacer un examen rápido del antivirus de vez en cuando. ¿Cómo harías para que eso quede como hábito fijo?"
+      },
+      deviceLossTheft: {
+        keywords: ["robo","robado","robaron","perdido","perdio","hurto","find my","encontrar mi","patron de desbloqueo","bloqueo de pantalla","desbloqueo"],
+        concept: "Si te roban o perdés un equipo, el daño lo limita el bloqueo con código de 6 u 8 dígitos -evitá patrones-, el cifrado de disco (BitLocker o FileVault) y la función para encontrar o borrar a distancia. Tratalo como si llevaras mucho dinero encima.",
+        ask: "¿Tu compu y tu celular tienen código de bloqueo y activada la función de encontrar el dispositivo?",
+        stage1: "Evaluemos qué está en juego si el equipo quedó en manos de otro: ¿qué información hay adentro -trabajos, fotos, cuentas, claves- y qué tan grave sería que alguien la viera o la use?",
+        stage2: "Para limitar el daño: código de bloqueo en todos los dispositivos, cifrado cuando está disponible y la función de localización activada. ¿Sabés si en tus equipos está activo el bloqueo y la opción de encontrar o borrar a distancia?",
+        stage3: "Con el valor claro y las protecciones revisadas, el camino: activar localización y cifrado, y tener un plan -desde un equipo ajeno, cambiar las claves-. ¿Qué harías primero hoy si el equipo desapareciera ahora mismo?"
+      },
+      backupCopies: {
+        keywords: ["respaldo","copia de seguridad","copia","backup","nube","onedrive","icloud","google drive","otro lado"],
+        concept: "Una copia de seguridad es una fotocopia de tus archivos guardada en otro lugar -otro disco, la nube o un pendrive aparte- para que, si el equipo falla o lo cifran, tengas dónde recuperarte. Regla simple: nada importante en un solo lugar.",
+        ask: "¿Qué es lo más importante que hoy no tenés copiado en otro lado?",
+        stage1: "Veamos qué tan valioso es lo que no tenés copiado: si el equipo se rompiera o lo cifraran hoy, ¿qué archivos, fotos o trabajos se perderían para siempre? ¿Existe algún respaldo, aunque sea viejo, en otro lado?",
+        stage2: "Cuidar sin tocar mal: la copia debe estar aparte del equipo principal y sin quedarse siempre conectada, para que un problema no la contagie. ¿Dónde podrías guardarla para que esté separada de lo que querés proteger?",
+        stage3: "Con lo valioso definido y el lugar pensado, la estrategia: copias periódicas de lo esencial y comprobar que se abren. ¿Cada cuánto te parecería razonable hacer una y cómo verificarías que funciona antes de necesitarla?"
+      },
+      safeBrowsing: {
+        keywords: ["wifi","wi fi","router","conexion","hotspot","red publica","navegador","navegar","https","candado","url","web fiable","pagina falsa","sitio raro","certificado"],
+        concept: "Para navegar seguro: revisá que la URL empiece por https y tenga candado, que el dominio coincida con la empresa que dice ser y desconfiá de webs con errores o demasiados anuncios. En wifi pública, evitá entrar a tus cuentas.",
+        ask: "¿Cómo sabés si un sitio es confiable antes de poner ahí tus datos?",
+        stage1: "Pensemos qué exponés al navegar: si entrás a un sitio o red dudosa con tu sesión abierta, ¿qué datos valiosos -correo, contraseñas, tarjeta- quedarían en juego? ¿Tenés algo importante atado a esa cuenta?",
+        stage2: "Cuidar sin tocar mal: antes de escribir datos, revisá el candado y el dominio; en redes públicas, evitá el correo y el banco. ¿Qué señal revisarías primero en esa página antes de poner tu contraseña?",
+        stage3: "Con el riesgo claro, el camino: verificar https y dominio, y decidir qué datos merecen riesgo en cada red. ¿Qué detalle de esa página te haría cerrarla de inmediato y por qué?"
+      },
+      socialMedia: {
+        keywords: ["redes sociales","whatsapp","instagram","facebook","tiktok","cuenta falsa","perfil","publicar","seguidores"],
+        concept: "En redes, poné el perfil como privado, desconfiá de cuentas falsas que piden datos o dinero, y pensá dos veces antes de publicar: ubicación en vivo, documentos o rutinas le sirven a un ciberdelincuente. También activá verificación en dos pasos en el chat.",
+        ask: "¿Qué es lo que más te gustaría proteger de tus redes o tus chats?",
+        stage1: "Veamos qué vale en tus redes: fotos, conversaciones, contactos. Si alguien entrara a tu cuenta, ¿qué información personal quedaría expuesta y a quién podría perjudicar?",
+        stage2: "Para cuidarlo: perfil privado, contraseña distinta y desconfiar de mensajes que piden clics o códigos. ¿Cuál de esos hábitos ya cumplís y cuál te falta?",
+        stage3: "Ya sabés qué proteger y qué evitar. El camino: revisar permisos de apps, sesiones activadas y códigos de recuperación. ¿Por dónde empezarías esta semana para dejar tu perfil más cerrado?"
+      },
+      onlineShopping: {
+        keywords: ["comprar","tienda","precio","oferta","rebaja","descuento","pago","tarjeta","envio","chollo"],
+        concept: "Antes de comprar por internet: revisá la URL (https y dominio), los datos de la empresa (aviso legal o contacto), los sellos de confianza, precios demasiado bajos y las valoraciones. Si todo es rebaja permanente o el sitio no tiene datos claros, mejor no compres.",
+        ask: "¿Qué te hizo dudar de esa tienda y qué datos legales encontraste?",
+        stage1: "Antes de pagar, evaluemos qué está en juego: si el sitio es falso, ¿qué datos de tarjeta o personales quedarían en manos de otro y qué podrían hacer con ellos?",
+        stage2: "Cuidar sin tocar mal: no pongas datos en sitios que no revisaste y usá métodos de pago con protección. ¿Qué señal del sitio te frenaría a poner la tarjeta hoy?",
+        stage3: "Con el riesgo claro, el camino: métodos de pago seguros, sellos y valoraciones verificables. ¿Qué comprobarías primero antes de la próxima compra y por qué?"
+      },
+      incidentReport: {
+        keywords: ["denuncia","denunciar","policia","ministerio publico","incidente","reportar","alertas tempranas","como recupero","recupero mis"],
+        concept: "Cuando algo salió mal: anotá en una línea de tiempo qué pasó y cuándo -sirve para la denuncia y para entender la causa-, cambiá las contraseñas desde un equipo sano, avisá al docente o responsable y, si hay delito, denunciá ante la autoridad competente.",
+        ask: "¿Ya anotaste qué pasó y cuándo, o lo tenés todo solo de memoria?",
+        stage1: "Antes de actuar, valoremos: ¿qué tan grave es lo ocurrido -qué datos, cuentas o equipos están afectados- y qué daño podría seguir si no se documenta ni se avisa? ¿Hay algo más valioso que todavía esté en riesgo?",
+        stage2: "Cuidar sin tocar mal: no borres mensajes ni modifiques nada; registrá todo y asegurá las cuentas desde otro equipo. ¿Qué datos o cuentas deberías proteger primero mientras dejás la escena como está?",
+        stage3: "Con lo registrado y contenido, el camino: un plan de respuesta -qué hago, con quién me comunico, cuándo considero que bajó el riesgo- y la denuncia si corresponde. ¿Quién sería tu primer contacto si esto pasara en serio?"
+      },
+      protectionCulture: {
+        keywords: ["fotos","cuentas","celular","celu","compu","cuidarlos","proteger","guardarlos","datos sensibles","trabajos"],
+        concept: "Cuidar lo que guardás tiene tres bases del manual: clave o código en todos los dispositivos -incluido el celular-, cuidado físico de los equipos (no dejarlos tirados ni sin llave) y copias separadas de lo importante.",
+        ask: "¿Hoy tenés bloqueo con clave o código en tus dispositivos y algún respaldo aparte?",
+        stage1: "Cuidar lo que guardamos en el celu y en la compu arranca por reconocer **qué es lo más valioso para vos**: fotos, apuntes del taller, cuentas o datos sensibles que no querés perder ni que caigan en malas manos.\n\nDe todo lo que tenés guardado hoy, ¿qué es lo que más te dolería perder o que alguien vea sin permiso?",
+        stage2: "El manual destaca tres bases: proteger con clave o código todos los dispositivos (incluidos celulares), cuidar físicamente los equipos para que no los roben ni queden sin llave, y hacer copias de respaldo más allá de tener todo en un solo lugar.\n\n¿Hoy tenés bloqueo con clave o código en tus dispositivos y algún respaldo separado de lo más importante?",
+        stage3: "Ya ubicamos qué vale más y qué hábitos cuidan los equipos y los datos en el día a día. El paso siguiente es armar un plan sencillo y constante, como claves únicas, verificación en dos pasos y actualizaciones al día.\n\n¿Cuál de esos hábitos te parece más fácil de poner en práctica esta semana en tu compu o celu?"
+      }
+    };
+
+    function detectTopic(normalizedText) {
+      let selected = null;
+      let highestScore = 0;
+      for (const topic of Object.values(KNOWLEDGE_TOPICS)) {
+        let score = 0;
+        for (const kw of topic.keywords) {
+          if (normalizedText.includes(kw)) {
+            score += 1;
+          }
+        }
+        if (score > highestScore) {
+          highestScore = score;
+          selected = topic;
+        }
+      }
+      return highestScore > 0 ? selected : null;
+    }
+
+    // =========================================================================
+    // ESTADO DE LA APLICACIÓN
+    // =========================================================================
+    let conversationHistory = [];
+    let isAutoVoiceEnabled = true;
+    let speechRate = 1.0; // 1.0 = Normal, 0.82 = Lenta
+    let isListening = false;
+    let isSpeaking = false;
+    let isThinking = false;
+    let recognition = null;
+    let selectedSpanishVoice = null;
+    let currentStep = 1;
+
+    // Mensaje inicial acogedor en español de Argentina
+    const INITIAL_GREETING = "¡Hola! Soy ASISTENTE BAV, tu guía en el taller para cuidar y recuperar datos. Acá no vas a encontrar respuestas mágicas ni comandos para copiar y pegar: vamos a pensarlo juntos, paso a paso, con ejemplos claros. Contame, ¿qué te pasó hoy con tu compu, tu celu o tus archivos?";
+
+    // =========================================================================
+    // INICIALIZACIÓN AL CARGAR LA PÁGINA
+    // =========================================================================
+    window.addEventListener("DOMContentLoaded", () => {
+      initSpeechSynthesis();
+      initSpeechRecognition();
+      startFreshSession(false);
+    });
+
+    function startFreshSession(shouldSpeak = true) {
+      conversationHistory = [];
+      currentStep = 1;
+      updateProgressUI(1);
+
+      const chatContainer = document.getElementById("chatMessages");
+      chatContainer.innerHTML = "";
+
+      conversationHistory.push({
+        role: "model",
+        parts: [{ text: INITIAL_GREETING }]
+      });
+
+      appendMessageBubble("assistant", INITIAL_GREETING, shouldSpeak);
+      document.getElementById("quickChipsContainer").classList.remove("hidden");
+    }
+
+    function resetConversation() {
+      stopSpeaking();
+      if (isListening) stopListening();
+      startFreshSession(true);
+      showToast("¡Listo! Arrancamos un caso nuevo en el taller.", "🔄");
+    }
+
+    // =========================================================================
+    // SÍNTESIS DE VOZ (TEXT-TO-SPEECH PRIORIZANDO ESPAÑOL DE ARGENTINA)
+    // =========================================================================
+    function initSpeechSynthesis() {
+      if (!("speechSynthesis" in window)) return;
+
+      const loadVoices = () => {
+        const voices = window.speechSynthesis.getVoices();
+        if (!voices.length) return;
+
+        // Prioridad: Español de Argentina (es-AR) -> Español general/latinoamericano -> cualquier español
+        const preferredLangs = ["es-AR", "es-419", "es-MX", "es-US", "es-ES", "es"];
+        for (const lang of preferredLangs) {
+          const found = voices.find(v => v.lang.toLowerCase().includes(lang.toLowerCase()));
+          if (found) {
+            selectedSpanishVoice = found;
+            break;
+          }
+        }
+      };
+
+      loadVoices();
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    function cleanTextForSpeech(rawText) {
+      return rawText
+        .replace(/[*_#`~>]/g, "")
+        .replace(/\[(.*?)\]\(.*?\)/g, "$1")
+        .replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function speakText(text) {
+      if (!("speechSynthesis" in window)) return;
+
+      stopSpeaking();
+      const cleaned = cleanTextForSpeech(text);
+      if (!cleaned) return;
+
+      const utterance = new SpeechSynthesisUtterance(cleaned);
+      if (selectedSpanishVoice) {
+        utterance.voice = selectedSpanishVoice;
+        utterance.lang = selectedSpanishVoice.lang;
+      } else {
+        utterance.lang = "es-AR";
+      }
+
+      utterance.rate = speechRate;
+      utterance.pitch = 1.03;
+
+      utterance.onstart = () => {
+        isSpeaking = true;
+        setAvatarState("speaking");
+        document.getElementById("stopSpeakingBtn").classList.remove("hidden");
+        document.getElementById("stopSpeakingBtn").classList.add("inline-flex");
+      };
+
+      utterance.onend = () => {
+        isSpeaking = false;
+        setAvatarState("idle");
+        document.getElementById("stopSpeakingBtn").classList.add("hidden");
+        document.getElementById("stopSpeakingBtn").classList.remove("inline-flex");
+      };
+
+      utterance.onerror = () => {
+        isSpeaking = false;
+        setAvatarState("idle");
+        document.getElementById("stopSpeakingBtn").classList.add("hidden");
+      };
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function stopSpeaking() {
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+      isSpeaking = false;
+      if (!isListening && !isThinking) {
+        setAvatarState("idle");
+      }
+      const stopBtn = document.getElementById("stopSpeakingBtn");
+      if (stopBtn) {
+        stopBtn.classList.add("hidden");
+        stopBtn.classList.remove("inline-flex");
+      }
+    }
+
+    function toggleAutoVoice() {
+      isAutoVoiceEnabled = !isAutoVoiceEnabled;
+      const btn = document.getElementById("autoVoiceBtn");
+      const label = document.getElementById("autoVoiceLabel");
+      const onIcon = document.getElementById("voiceOnIcon");
+      const offIcon = document.getElementById("voiceOffIcon");
+
+      if (isAutoVoiceEnabled) {
+        btn.className = "px-3 py-2 rounded-xl bg-mint-100 hover:bg-mint-200/70 text-mint-700 text-xs font-semibold flex items-center gap-1.5 transition active:scale-95";
+        label.textContent = "Voz Activa";
+        onIcon.classList.remove("hidden");
+        offIcon.classList.add("hidden");
+        showToast("Voz automática activada. Te voy a leer cada respuesta.", "🔊");
+      } else {
+        stopSpeaking();
+        btn.className = "px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold flex items-center gap-1.5 transition active:scale-95";
+        label.textContent = "Voz Silenciada";
+        onIcon.classList.add("hidden");
+        offIcon.classList.remove("hidden");
+        showToast("Voz automática silenciada. Podés tocar 'Escuchar' cuando quieras.", "🔇");
+      }
+    }
+
+    function toggleSpeechRate() {
+      const label = document.getElementById("speedLabel");
+      if (speechRate === 1.0) {
+        speechRate = 0.82;
+        label.textContent = "Voz: Lenta";
+        showToast("Velocidad cambiada a Lenta para escucharlo más tranqui.", "🐢");
+      } else {
+        speechRate = 1.0;
+        label.textContent = "Voz: Normal";
+        showToast("Velocidad cambiada a Normal.", "🐇");
+      }
+    }
+
+    // =========================================================================
+    // RECONOCIMIENTO DE VOZ (SPEECH-TO-TEXT EN ESPAÑOL DE ARGENTINA)
+    // =========================================================================
+    function initSpeechRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        const micBtn = document.getElementById("micButton");
+        micBtn.classList.add("opacity-60");
+        micBtn.title = "Tu navegador no soporta micrófono por voz, pero podés escribir sin problema.";
+        return;
+      }
+
+      recognition = new SpeechRecognition();
+      recognition.lang = "es-AR";
+      recognition.interimResults = true;
+      recognition.continuous = false;
+      recognition.maxAlternatives = 1;
+
+      let finalTranscript = "";
+
+      recognition.onstart = () => {
+        isListening = true;
+        finalTranscript = "";
+        stopSpeaking();
+        setAvatarState("listening");
+        const micBtn = document.getElementById("micButton");
+        micBtn.classList.add("listening-ring", "bg-red-500", "hover:bg-red-600");
+        micBtn.classList.remove("bg-mint-500", "hover:bg-mint-600");
+
+        document.getElementById("liveTranscriptBox").classList.remove("hidden");
+        document.getElementById("liveTranscriptText").textContent = "Te estoy escuchando... contame qué pasó.";
+      };
+
+      recognition.onresult = (event) => {
+        let interimTranscript = "";
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          } else {
+            interimTranscript += event.results[i][0].transcript;
+          }
+        }
+        const display = finalTranscript || interimTranscript;
+        if (display) {
+          document.getElementById("liveTranscriptText").textContent = `“${display}”`;
+          document.getElementById("userInput").value = display;
+        }
+      };
+
+      recognition.onerror = (event) => {
+        resetMicUI();
+        if (event.error === "not-allowed") {
+          showToast("No diste permiso para usar el micrófono. ¡No pasa nada! Escribí tu consulta abajo.", "🎤");
+        } else if (event.error === "no-speech") {
+          showToast("No llegué a escucharte. Tocá el micrófono de nuevo o escribí tu mensaje.", "👂");
+        } else {
+          showToast("Hubo un problemita con el micrófono. Podés escribir tranquilamente en el chat.", "💬");
+        }
+      };
+
+      recognition.onend = () => {
+        const textToSend = document.getElementById("userInput").value.trim();
+        resetMicUI();
+        if (textToSend) {
+          document.getElementById("userInput").value = "";
+          processUserMessage(textToSend);
+        }
+      };
+    }
+
+    function toggleMicrophone() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition || !recognition) {
+        showToast("Este navegador no permite usar micrófono. ¡Escribí tu pregunta en la caja de texto!", "⌨️");
+        document.getElementById("userInput").focus();
+        return;
+      }
+
+      if (isListening) {
+        stopListening();
+      } else {
+        try {
+          recognition.start();
+        } catch (err) {
+          resetMicUI();
+        }
+      }
+    }
+
+    function stopListening() {
+      if (recognition && isListening) {
+        try {
+          recognition.stop();
+        } catch (e) {}
+      }
+      resetMicUI();
+    }
+
+    function resetMicUI() {
+      isListening = false;
+      if (!isThinking && !isSpeaking) {
+        setAvatarState("idle");
+      }
+      const micBtn = document.getElementById("micButton");
+      micBtn.classList.remove("listening-ring", "bg-red-500", "hover:bg-red-600");
+      micBtn.classList.add("bg-mint-500", "hover:bg-mint-600");
+      document.getElementById("liveTranscriptBox").classList.add("hidden");
+    }
+
+    // =========================================================================
+    // CONTROL VISUAL DEL AVATAR Y PROGRESO PEDAGÓGICO (3 ETAPAS)
+    // =========================================================================
+    function setAvatarState(state) {
+      const statusDot = document.getElementById("statusDot");
+      const statusText = document.getElementById("statusText");
+      const waves = document.getElementById("voiceWaves");
+      const mouth = document.getElementById("avatarMouth");
+      const antenna = document.getElementById("avatarAntenna");
+
+      if (state === "listening") {
+        statusDot.className = "w-2.5 h-2.5 rounded-full bg-red-500 animate-ping";
+        statusText.textContent = "Escuchándote...";
+        statusText.className = "text-xs font-bold uppercase tracking-wider text-red-600";
+        waves.classList.remove("opacity-0");
+        mouth.setAttribute("d", "M27 37 Q32 40 37 37");
+        antenna.setAttribute("fill", "#f87171");
+      } else if (state === "thinking") {
+        statusDot.className = "w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse";
+        statusText.textContent = "Pensando cómo guiarte...";
+        statusText.className = "text-xs font-bold uppercase tracking-wider text-amber-600";
+        waves.classList.add("opacity-0");
+        mouth.setAttribute("d", "M26 38 L38 38");
+        antenna.setAttribute("fill", "#fbbf24");
+      } else if (state === "speaking") {
+        statusDot.className = "w-2.5 h-2.5 rounded-full bg-mint-500 animate-pulse";
+        statusText.textContent = "Hablando con vos...";
+        statusText.className = "text-xs font-bold uppercase tracking-wider text-mint-600";
+        waves.classList.remove("opacity-0");
+        mouth.setAttribute("d", "M25 35 Q32 44 39 35");
+        antenna.setAttribute("fill", "#34d399");
+      } else {
+        statusDot.className = "w-2.5 h-2.5 rounded-full bg-mint-500";
+        statusText.textContent = "Listo para escucharte";
+        statusText.className = "text-xs font-bold uppercase tracking-wider text-bav-700";
+        waves.classList.add("opacity-0");
+        mouth.setAttribute("d", "M25 36 Q32 42 39 36");
+        antenna.setAttribute("fill", "#34d399");
+      }
+    }
+
+    function updateProgressUI(activeStep) {
+      document.getElementById("stepBadge").textContent = `Etapa ${activeStep} de 3`;
+
+      for (let i = 1; i <= 3; i++) {
+        const card = document.getElementById(`stepCard${i}`);
+        const num = document.getElementById(`stepNum${i}`);
+
+        if (i < activeStep) {
+          card.className = "p-3 rounded-2xl border border-mint-300 bg-mint-50/70 transition-all";
+          num.className = "w-7 h-7 rounded-xl bg-mint-500 text-white font-bold text-xs flex items-center justify-center shrink-0";
+          num.textContent = "✓";
+        } else if (i === activeStep) {
+          card.className = "p-3 rounded-2xl border-2 border-bav-500 bg-bav-50/80 shadow-2xs transition-all";
+          num.className = "w-7 h-7 rounded-xl bg-bav-600 text-white font-bold text-xs flex items-center justify-center shrink-0";
+          num.textContent = i;
+        } else {
+          card.className = "p-3 rounded-2xl border border-slate-200 bg-slate-50/60 opacity-70 transition-all";
+          num.className = "w-7 h-7 rounded-xl bg-slate-300 text-slate-700 font-bold text-xs flex items-center justify-center shrink-0";
+          num.textContent = i;
+        }
+      }
+    }
+
+    // =========================================================================
+    // MANEJO DEL CHAT Y LLAMADA A GEMINI API
+    // =========================================================================
+    function handleFormSubmit(event) {
+      event.preventDefault();
+      const input = document.getElementById("userInput");
+      const text = input.value.trim();
+      if (!text || isThinking) return;
+
+      input.value = "";
+      processUserMessage(text);
+    }
+
+    function sendQuickPrompt(promptText) {
+      if (isThinking) return;
+      processUserMessage(promptText);
+    }
+
+    // =========================================================================
+    // MOTOR DE MENTORÍA SOCRÁTICA LOCAL RETROALIMENTADO CON EL MATERIAL DEL TALLER
+    // Regla estricta: jamás entrega comandos, scripts ni soluciones directas;
+    // siempre guía con preguntas orientadoras en 3 etapas en español de Argentina.
+    // Responde preguntas conceptuales del alumno con el material (tríada CIA,
+    // contraseñas, 2FA, phishing, copias, cifrado, incidentes) y cierra SIEMPRE
+    // con UNA pregunta orientadora.
+    // =========================================================================
+
+    // Normaliza texto para comparar sin tildes ni puntuación inicial
+    function normalizeForMatch(raw) {
+      return (raw || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim()
+        .replace(/^[¿?¡!.,;:\s]+/, "");
+    }
+
+    // Detecta si el alumno está bloqueado: "no sé", "no entiendo", "no tengo idea"...
+    function isStuckText(matchable) {
+      if (!matchable) return false;
+      return /^(no se|nose|no lo se|no tengo idea|no idea|no entiendo|no entendi|no se que hacer|no se que decir|no se que contestar|no se bien|no capté|no capte|no me queda claro|no encuentro|no se aun|no se todavía|no se todavia|no recuerdo|no me acuerdo|no doy mas|no puedo mas|me perdí|me perdi|estoy perdido|ayuda|socorro|ni idea)([.!?, ]|$)/.test(matchable);
+    }
+
+    // Cuenta cuántos mensajes de bloqueo seguidos hay al final de la conversación
+    function countConsecutiveStuck(history) {
+      const msgs = Array.isArray(history) ? history : [];
+      let count = 0;
+      for (let i = msgs.length - 1; i >= 0; i--) {
+        const m = msgs[i];
+        if (!m || m.role !== "user") continue;
+        const text = m.parts && m.parts[0] && m.parts[0].text;
+        if (isStuckText(normalizeForMatch(text))) {
+          count++;
+        } else {
+          break;
+        }
+      }
+      return count;
+    }
+
+    // Último texto del asistente, para no repetir el mismo mensaje dos veces
+    function lastAssistantText(history) {
+      const msgs = Array.isArray(history) ? history : [];
+      for (let i = msgs.length - 1; i >= 0; i--) {
+        if (msgs[i] && msgs[i].role === "model") {
+          return (msgs[i].parts && msgs[i].parts[0] && msgs[i].parts[0].text) || "";
+        }
+      }
+      return "";
+    }
+
+    // --- Detección de saludos, continuidad y mensajes fuera de tema ---
+
+    // Saludo corto (no confundir con "hola, tengo un problema con el ransomware")
+    function isGreetingText(matchable) {
+      if (!matchable) return false;
+      if (matchable.split(/\s+/).length > 5) return false;
+      return /^(hola|buenas|buenos dias|buen dia|buenas tardes|buenas noches|que tal|holi|hey|como estas|como va|todo bien|que onda)/.test(matchable);
+    }
+
+    // Agradecimiento o felicitación breve
+    function isThanksText(matchable) {
+      if (!matchable) return false;
+      return /^(gracias|muchas gracias|genial|excelente|perfecto|buenisimo|buenazo|piola|bien hecho)/.test(matchable);
+    }
+
+    // Preguntas sobre el propio asistente o por las opciones del inicio:
+    // se responden mostrando los casos del taller (solo si no traen vocabulario
+    // del material, para no pisar "¿cuáles son las opciones de cifrado?")
+    function isAboutAssistantText(matchable) {
+      if (!matchable) return false;
+      return /^(quien sos|quienes sos|que haces|que puedes hacer|que sabes hacer|para que servis|para que sirves|como te uso|como uso esto|como se usa esto|como funciona esto|que puedo preguntar|como me ayudas|que temas manejas|por donde empiezo|por donde arranco|que hago primero|como empiezo|que opciones tenes|que opciones tengo|dame opciones|mostrame las opciones|opciones)/.test(matchable);
+    }
+
+    // Respuestas cortas de continuidad ("sí", "no", "y después"...): siguen el caso
+    function isContinuationText(matchable) {
+      if (!matchable) return false;
+      return /^(si|sipo|sip|no|nada|ya|ok|okay|bueno|buenisimo|dale|a ver|ver|y despues|despues|luego|ahora|entonces|seguimos|depende|capaz|quizas|puede ser|nose|eh|mmm|hmm|o sea|claro|obvio|listo|bien|mal|mas o menos|regular|tambien|igual|buen punto|caso [1-4])$/.test(matchable);
+    }
+
+    // Vocabulario del material del taller: si el mensaje lo trae, está en tema
+    const DOMAIN_TOPIC_RE = /\b(?:ciber\w*|cia|tria\w*|seguridad|seguro|contrasena|claves?|passwords?|cuentas?|correos?|emails?|verificacion|dos pasos|2fa|phishing|vishing|smishing|estafas?|engan\w*|suplant\w*|remitentes?|enlaces?|links?|urls?|https|candado|certificado\w*|navegadores?|cookies|historial|wifi|wi fi|routers?|conexiones?|redes?|redes sociales|whatsapp|instagram|facebook|tiktok|privacidad|datos|informacion|archivos?|carpetas?|discos?|pendrives?|usb|memorias?|formate\w*|particiones?|ransomware|cifrad\w*|malware|virus|spyware|troyano\w*|keylogger|botnet|rootkit|hacks?|hackers?|ataques?|infecc\w*|actualiz\w*|antivirus|defender|parches?|copias?|respaldos?|backups?|nube|onedrive|icloud|google drive|dispositivos?|celular|celu|computadora|compu|equipos?|pantallas?|telefonos?|software|programas?|aplicaciones?|apps?|descarg\w*|instal\w*|robos?|robado|robaron|perdido|perdida|hurto|bloque\w*|desbloque\w*|denuncia\w*|policia|ministerio|incidentes?|reportar|tarjetas?|pagos?|compras?|tiendas?|ofertas?|descuentos?|bitlocker|filevault|localizacion|fotos?|trabajos?|internet|navegar|navegacion|webs?|paginas?|sitios?|noticias falsas|fake news|anuncios?|alquiler|prestamos?|chollos?|casos?|taller)\b/i;
+
+    function hasDomainKeyword(matchable) {
+      return !!matchable && DOMAIN_TOPIC_RE.test(matchable);
+    }
+
+    // Tema ajeno al material del taller (ej.: "amor", "fútbol", "matemática")
+    function isOffTopicText(matchable) {
+      if (!matchable) return false;
+      if (isGreetingText(matchable)) return false;
+      if (isThanksText(matchable)) return false;
+      if (isAboutAssistantText(matchable)) return false;
+      if (isContinuationText(matchable)) return false;
+      if (hasDomainKeyword(matchable)) return false;
+      return true;
+    }
+
+    // Opciones del inicio: los 4 casos del taller (mismos que los chips)
+    function startOptionsText() {
+      return "🛠️ **Casos del taller** (tocá uno para practicar):\n\n**Caso 1** — Archivo cifrado / Ransomware\n**Caso 2** — Pendrive o disco que no abre\n**Caso 3** — Posible infección o toma de control\n**Caso 4** — Celular o compu con datos sensibles";
+    }
+
+    // Respuesta cuando la pregunta no corresponde al material: se avisa que no
+    // hay ese tipo de información y se redirige al inicio con las opciones
+    function buildOffTopicReply() {
+      return "Ese tema no forma parte de mi información: solo trabajo con los temas del material del taller de ciberseguridad (tríada CIA, contraseñas, copias de seguridad, phishing, dispositivos, privacidad y más).\n\n¡No pasa nada! Volvamos al inicio y elegimos por dónde arrancar:\n\n" + startOptionsText() + "\n\nTocá uno de los casos o contame qué te pasa con tu compu, tu celu o tus archivos, y lo pensamos juntos paso a paso.";
+    }
+
+    // Respuesta cuando preguntan por el asistente o por sus opciones
+    function buildAboutAssistantReply() {
+      return "¡Buena pregunta! Soy el ASISTENTE BAV del taller de ciberseguridad: te guío con preguntas para pensar tus casos, sin dar comandos ni soluciones directas. Trabajo solo con el material del curso (contraseñas, copias de seguridad, phishing, tríada CIA, dispositivos y más).\n\n" + startOptionsText() + "\n\nTocá uno de los casos o contame qué te pasa con tu compu, tu celu o tus archivos.";
+    }
+
+    // Reinicia la conversación al inicio: muestra los chips de casos y vuelve a Etapa 1
+    function resetConversationToStart(history) {
+      try {
+        const chips = document.getElementById("quickChipsContainer");
+        if (chips && chips.classList) {
+          chips.classList.remove("hidden");
+          if (typeof chips.scrollIntoView === "function") {
+            chips.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          }
+        }
+      } catch (e) { /* sin DOM (tests) */ }
+      if (Array.isArray(history) && history.length > 1) {
+        const currentMsg = history[history.length - 1];
+        history.length = 0;
+        history.push(currentMsg);
+      }
+      syncProgressWithStage(1);
+    }
+
+    // Respuestas para alumno bloqueado: en vez de repetir la pregunta, se da MÁS
+    // información del material para que pueda resolverlo. 3 niveles de ayuda:
+    //   1) pista concreta + pregunta más fácil
+    //   2) ejemplo de respuesta posible + pregunta de opción múltiple
+    //   3) opciones A/B/C para elegir (reducción total de la carga)
+    function generateStuckReply(topic, stage, helpLevel) {
+      const concept = topic ? topic.concept : null;
+
+      // Nivel 1: pista informativa
+      if (helpLevel <= 1) {
+        let hint;
+        if (stage === 1) {
+          hint = "Para arrancar no hace falta saber de seguridad: mirá **qué archivos o datos están en juego** y si ya tenés una copia en otro lado. Por ejemplo, si el trabajo final solo está en ese disco y no tenés respaldo, es lo más valioso.";
+        } else if (stage === 2) {
+          hint = "Pensalo así: **cuidar sin tocar mal** significa no guardar nada nuevo encima, no enchufar USB dudosos y proteger el acceso con clave. Es como no pisar el acelerador cuando el freno está flojo.";
+        } else {
+          hint = "Acá no hay una respuesta única: se trata de **elegir qué revisar primero** y por qué. Por ejemplo, conviene confirmar si existe una copia limpia antes de tocar el problema original.";
+        }
+        const tail = concept ? "\n\n" + concept : "";
+        return hint + tail + "\n\n¿Te sirve esta pista? Contame qué entendés hasta ahora y seguimos desde ahí.";
+      }
+
+      // Nivel 2: ejemplo concreto + pregunta de opción
+      if (helpLevel === 2) {
+        let example;
+        if (stage === 1) {
+          example = "Un compañero respondería algo como: *«Lo más valioso son las fotos del viaje y el trabajo final; solo están en esa compu y no hice copia»*. Es decir: nombrás lo importante + decís si hay respaldo.";
+        } else if (stage === 2) {
+          example = "Un compañero respondería algo como: *«Sacaría el pendrive, no guardaría nada más encima y no lo conectaría a otra compu hasta entender qué pasa»*. Es decir: frenás el daño antes de probar cosas.";
+        } else {
+          example = "Un compañero respondería algo como: *«Primero vería si hay una copia previa que funcione, y recién después analizaría qué provocó el problema»*. Es decir: primero lo recuperable, después la causa.";
+        }
+        return example + "\n\n¿Cuál de estas dos opciones se parece más a lo que harías vos: **(A)** revisar primero si existe una copia sana, o **(B)** analizar primero qué causó el problema?";
+      }
+
+      // Nivel 3: opciones A/B/C para elegir (mínimo esfuerzo)
+      if (helpLevel === 3) {
+        if (stage === 1) {
+          return "Sin problema, elegí solo una opción y la pensamos juntos:\n\n**A)** Sí, hay archivos que no puedo perder y no tengo copia.\n**B)** Sí, son importantes pero ya tengo una copia en otro lado.\n**C)** No hay nada tan importante en ese equipo.\n\n¿Cuál se acerca más a tu caso?";
+        }
+        if (stage === 2) {
+          return "Tranqui, elegí solo una opción y la seguimos:\n\n**A)** No guardaría nada nuevo encima de lo que queda.\n**B)** No enchufaría USB ni lo conectaría a otra compu.\n**C)** Protegería el acceso con clave y desconectaría de internet si hay algo raro.\n\n¿Cuál harías primero?";
+        }
+        return "Dale, elegí solo una opción y la analizamos:\n\n**A)** Verificar si existe una copia limpia guardada aparte.\n**B)** Buscar qué provocó el bloqueo o la pérdida.\n**C)** Pedir ayuda al docente antes de tocar nada.\n\n¿Cuál te parece más sensata y por qué?";
+      }
+
+      // Nivel 4: salida de emergencia - el asistente propone pensar juntos de a un paso
+      return "¡Tranqui, no pasa nada si cuesta! Lo podemos pensar de a un paso. Empezá por lo más simple: contame **una sola cosa** que hayas notado —por ejemplo, si los archivos no se abren, si desaparecieron o si el equipo anda raro—. Con eso ya arrancamos juntos.";
+    }
+
+    // Etapa efectiva según lo ya conversado (turnos + señales de respaldo/contención)
+    // Los mensajes de bloqueo ("no sé"...), fuera de tema ("amor") o sobre el
+    // propio asistente NO cuentan como avance de etapa.
+    function computeEffectiveStage(history) {
+      const msgs = Array.isArray(history) ? history : [];
+      const substantiveUserMsgs = msgs.filter(m => {
+        if (!m || m.role !== "user") return true;
+        const text = m.parts && m.parts[0] && m.parts[0].text;
+        const norm = normalizeForMatch(text);
+        return !isStuckText(norm) && !isOffTopicText(norm) && !isAboutAssistantText(norm);
+      });
+      const userTurns = substantiveUserMsgs.filter(m => m.role === "user").length;
+
+      const lastUser = [...substantiveUserMsgs].reverse().find(m => m.role === "user");
+      const lastText = (lastUser && lastUser.parts && lastUser.parts[0] && lastUser.parts[0].text) || "";
+      const normalizedLast = normalizeForMatch(lastText);
+
+      const mentionsBackup =
+        normalizedLast.includes("copia") ||
+        normalizedLast.includes("respaldo") ||
+        normalizedLast.includes("backup") ||
+        normalizedLast.includes("nube") ||
+        normalizedLast.includes("otro lado") ||
+        normalizedLast.includes("no tengo") ||
+        normalizedLast.includes("no hay");
+
+      const mentionsContainment =
+        normalizedLast.includes("desconect") ||
+        normalizedLast.includes("saque") ||
+        normalizedLast.includes("apague") ||
+        normalizedLast.includes("no toque") ||
+        normalizedLast.includes("no guard") ||
+        normalizedLast.includes("aisl") ||
+        normalizedLast.includes("actualiz");
+
+      let stage = 1;
+      if (userTurns >= 3 || (mentionsBackup && mentionsContainment)) {
+        stage = 3;
+      } else if (userTurns >= 2 || mentionsBackup) {
+        stage = 2;
+      }
+      return stage;
+    }
+
+    function syncProgressWithStage(stage) {
+      if (stage !== currentStep) {
+        currentStep = stage;
+        updateProgressUI(currentStep);
+      }
+    }
+
+    function generateGuidedOfflineReply(userText, history) {
+      const normalized = (userText || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim();
+
+      // La puntuación inicial (¿, ¡, etc.) no debe romper la detección de intención:
+      // "¿Qué es la tríada CIA?" debe reconocerse igual que "qué es la tríada CIA"
+      const matchable = normalized.replace(/^[¿?¡!.,;:\s]+/, "");
+
+      // --- Saludo y agradecimiento: respuesta cálida sin forzar etapa ---
+      if (isGreetingText(matchable)) {
+        return "¡Hola! Qué bueno que pasás por el taller. Acá no hay respuestas mágicas ni comandos para copiar: pensamos juntos, paso a paso. Contame, ¿qué te pasó hoy con tu compu, tu celu o tus archivos?";
+      }
+      if (isThanksText(matchable)) {
+        return "¡De nada! Para eso estamos. Si querés, seguimos con el caso: ¿cuál es el paso que más te cuesta pensar ahora?";
+      }
+
+      // --- Preguntas sobre el asistente o por las opciones del inicio ---
+      if (isAboutAssistantText(matchable) && !hasDomainKeyword(matchable)) {
+        resetConversationToStart(history);
+        return buildAboutAssistantReply();
+      }
+
+      // --- "caso 1"..."caso 4": equivale a tocar el chip del caso del taller ---
+      const caseMatch = matchable.match(/\bcaso\s*([1-4])\b/);
+      if (caseMatch) {
+        const casePrompts = [
+          "Me apareció un cartel pidiendo rescate y no puedo abrir mis archivos",
+          "Conecté un pendrive o disco y no me deja abrirlo o desapareció una carpeta",
+          "Creo que entró un programa raro o un enlace engañoso y la compu anda rara",
+          "Tengo fotos, cuentas y trabajos importantes en mi celular y compu y quiero cuidarlos"
+        ];
+        const casePrompt = casePrompts[Number(caseMatch[1]) - 1];
+        // Se reemplaza el mensaje actual para que la conversación quede en tema
+        const msgs = Array.isArray(history) ? history : [];
+        const lastMsg = msgs[msgs.length - 1];
+        if (lastMsg && lastMsg.parts && lastMsg.parts[0]) {
+          lastMsg.parts[0].text = casePrompt;
+        }
+        return generateGuidedOfflineReply(casePrompt, history);
+      }
+
+      // --- Pedidos de comandos o recetas rápidas: nunca se entregan ---
+      const asksForCommands =
+        matchable.includes("comando") ||
+        matchable.includes("script") ||
+        matchable.includes("codigo") ||
+        matchable.includes("como destrabo") ||
+        matchable.includes("solucion directa") ||
+        matchable.includes("receta") ||
+        matchable.includes("copiar y pegar") ||
+        matchable.includes("pegar y copiar");
+
+      const stage = computeEffectiveStage(history);
+      syncProgressWithStage(stage);
+
+      if (asksForCommands) {
+        if (stage === 1) {
+          return "En el taller no vamos directo a comandos ni a tocar a ciegas, porque un paso apurado puede tapar o borrar pistas importantes. Primero pensemos en lo que está en juego: ¿qué archivos o carpetas son los más valiosos en este momento y qué pasaría si se perdieran o quedaran bloqueados?";
+        }
+        if (stage === 2) {
+          return "Antes de cualquier comando hay que cuidar lo que queda: no guardar nada encima, no enchufar USB dudosos y proteger el acceso al equipo. Si te pasara un apuro, ¿qué es lo primero que tendrías que asegurar para no empeorar el problema?";
+        }
+        return "Un comando aislado no reemplaza el criterio: conviene entender qué falla y por qué antes de ejecutar nada. Si tuvieras que explicarle a un compañero qué buscás resolver con ese comando, ¿cómo lo dirías con tus palabras?";
+      }
+
+      // --- Pregunta conceptual directa ("¿qué es X?", "¿cómo funciona X?") ---
+      const isConceptQuestion =
+        matchable.startsWith("que es") ||
+        matchable.startsWith("que son") ||
+        matchable.startsWith("como funciona") ||
+        matchable.startsWith("como creo") ||
+        matchable.startsWith("como se hace") ||
+        matchable.startsWith("como puedo") ||
+        matchable.startsWith("como hago") ||
+        matchable.startsWith("cual es") ||
+        matchable.startsWith("cuales son") ||
+        matchable.startsWith("definicion") ||
+        matchable.startsWith("explicame") ||
+        matchable.startsWith("explica") ||
+        matchable.startsWith("para que sirve") ||
+        matchable.includes(" diferencia entre") ||
+        matchable.startsWith("por que") ||
+        matchable.includes(" por que ");
+
+      const topic = detectTopic(normalized);
+
+      // Tema del caso: si el mensaje actual no nombra el tema, se busca en la
+      // conversación completa (así un "no sé" sigue respondiendo sobre el caso)
+      const conversationText = (Array.isArray(history) ? history : [])
+        .map(m => normalizeForMatch(m && m.parts && m.parts[0] && m.parts[0].text))
+        .join(" ");
+      const activeTopic = topic || detectTopic(conversationText);
+
+      if (isConceptQuestion && activeTopic && !isOffTopicText(matchable)) {
+        syncProgressWithStage(stage);
+        return activeTopic.concept + "\n\n" + activeTopic.ask;
+      }
+
+      // --- Alumno bloqueado ("no sé", "no entiendo"...): en vez de repetir la
+      // misma pregunta, se entrega MÁS información del material en niveles
+      // crecientes de ayuda (pista -> ejemplo -> opciones A/B/C). ---
+      if (isStuckText(matchable)) {
+        const wantsConcept = /(que es|que son|como funciona|como se hace|para que sirve|diferencia entre)/.test(matchable);
+        if (wantsConcept && activeTopic) {
+          return activeTopic.concept + "\n\n" + activeTopic.ask;
+        }
+
+        // Nivel de ayuda: 1er "no sé" -> pista; 2º -> ejemplo; 3º -> opciones.
+        // Se cicla para que nunca se repita el mismo mensaje dos veces seguidas.
+        let helpLevel = ((countConsecutiveStuck(history) - 1) % 4) + 1;
+        let stuckReply = generateStuckReply(activeTopic, stage, helpLevel);
+        if (stuckReply === lastAssistantText(history)) {
+          helpLevel = (helpLevel % 4) + 1;
+          stuckReply = generateStuckReply(activeTopic, stage, helpLevel);
+        }
+        return stuckReply;
+      }
+
+      // --- Fuera de la temática del material ("amor", "fútbol"...): se avisa
+      // que no hay ese tipo de información y se redirige al inicio con las
+      // opciones de los casos del taller ---
+      if (isOffTopicText(matchable)) {
+        resetConversationToStart(history);
+        return buildOffTopicReply();
+      }
+
+      // --- Guía socrática por etapa según temática del caso ---
+      if (activeTopic) {
+        const stageKey = "stage" + stage;
+        return activeTopic[stageKey];
+      }
+
+      // --- Sin tema detectado: guía genérica por etapa ---
+      if (stage === 1) {
+        return "Entiendo lo que me contás. Antes de tocar nada en el equipo, vamos a mirar **qué tan importantes son los archivos, cuentas o datos** que están involucrados y si existe alguna copia de seguridad en otro lado.\n\n¿Qué es lo más valioso que está en juego en este caso y sabés si tenés una copia aparte?";
+      }
+      if (stage === 2) {
+        return "Buen punto. En seguridad y cuidado de datos, lo clave es **no empeorar el estado actual**: evitar guardar cosas nuevas encima, no enchufar pendrives dudosos y proteger el acceso al equipo.\n\n¿Qué creés que podría pasar si seguimos usando o tocando el equipo sin frenar primero?";
+      }
+      return "Ya pensamos en el valor de la información y en cómo cuidar lo que queda. Ahora el foco está en analizar qué tipo de revisión o estrategia corresponde aplicar con calma y criterio.\n\nSegún lo que ves hasta ahora, ¿qué te parece más importante comprobar antes de actuar?";
+    }
+        async function processUserMessage(userText) {
+      stopSpeaking();
+      document.getElementById("quickChipsContainer").classList.add("hidden");
+
+      appendMessageBubble("user", userText, false);
+
+      conversationHistory.push({
+        role: "user",
+        parts: [{ text: userText }]
+      });
+
+      syncProgressWithStage(computeEffectiveStage(conversationHistory));
+
+      isThinking = true;
+      setAvatarState("thinking");
+      setInputsDisabled(true);
+      const typingId = appendTypingIndicator();
+
+      try {
+        let assistantReply = "";
+        if (apiKey && apiKey.trim().length > 0) {
+          try {
+            assistantReply = await fetchGeminiWithBackoff(conversationHistory);
+          } catch (apiErr) {
+            // Si falla la llamada externa o no hay red, usamos el motor socrático local retroalimentado
+            assistantReply = generateGuidedOfflineReply(userText, conversationHistory);
+          }
+        } else {
+          // Pausa breve para mantener un ritmo natural de diálogo y lectura por voz
+          await new Promise(resolve => setTimeout(resolve, 450));
+          assistantReply = generateGuidedOfflineReply(userText, conversationHistory);
+        }
+
+        removeTypingIndicator(typingId);
+
+        conversationHistory.push({
+          role: "model",
+          parts: [{ text: assistantReply }]
+        });
+
+        appendMessageBubble("assistant", assistantReply, isAutoVoiceEnabled);
+      } catch (error) {
+        removeTypingIndicator(typingId);
+        const safeGuidedReply = generateGuidedOfflineReply(userText, conversationHistory);
+        conversationHistory.push({
+          role: "model",
+          parts: [{ text: safeGuidedReply }]
+        });
+        appendMessageBubble("assistant", safeGuidedReply, isAutoVoiceEnabled);
+      } finally {
+        isThinking = false;
+        setInputsDisabled(false);
+        if (!isSpeaking && !isListening) {
+          setAvatarState("idle");
+        }
+      }
+    }
+
+    async function fetchGeminiWithBackoff(contents) {
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+
+      const payload = {
+        contents: contents,
+        systemInstruction: {
+          parts: [{ text: SYSTEM_PROMPT }]
+        },
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 600
+        }
+      };
+
+      const delays = [1000, 2000, 4000];
+      for (let attempt = 0; attempt <= delays.length; attempt++) {
+        try {
+          const response = await fetch(apiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+
+          if (!response.ok) {
+            const httpErr = new Error(`HTTP ${response.status}`);
+            httpErr.status = response.status;
+            throw httpErr;
+          }
+
+          const data = await response.json();
+          const replyText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (!replyText) {
+            throw new Error("Respuesta vacía del modelo");
+          }
+          return replyText.trim();
+        } catch (err) {
+          const status = err && err.status;
+          const isClientError = typeof status === "number" && status >= 400 && status < 500 && status !== 429;
+          if (attempt === delays.length || isClientError) {
+            throw err;
+          }
+          await new Promise(resolve => setTimeout(resolve, delays[attempt]));
+        }
+      }
+    }
+
+    // =========================================================================
+    // RENDERIZADO DE BURBUJAS DE MENSAJE Y UTILIDADES DE INTERFAZ
+    // =========================================================================
+    function appendMessageBubble(sender, text, autoSpeak = false) {
+      const container = document.getElementById("chatMessages");
+      const wrapper = document.createElement("div");
+
+      if (sender === "user") {
+        wrapper.className = "flex justify-end";
+        wrapper.innerHTML = `
+          <div class="max-w-[85%] sm:max-w-[75%] bg-bav-600 text-white px-4 py-3 rounded-3xl rounded-br-md shadow-xs text-sm leading-relaxed">
+            ${escapeHTML(text)}
+          </div>
+        `;
+      } else {
+        wrapper.className = "flex items-start gap-3";
+        const formattedParagraphs = formatAssistantText(text);
+        const safeTextAttr = encodeURIComponent(text);
+
+        wrapper.innerHTML = `
+          <div class="w-8 h-8 rounded-2xl bg-gradient-to-br from-bav-500 to-mint-500 text-white font-display font-bold text-xs flex items-center justify-center shrink-0 mt-1 shadow-xs">
+            BAV
+          </div>
+          <div class="max-w-[88%] sm:max-w-[78%] bg-slate-100/90 border border-slate-200/70 text-slate-800 px-4 py-3.5 rounded-3xl rounded-tl-md shadow-2xs space-y-2.5">
+            <div class="text-sm leading-relaxed space-y-2">
+              ${formattedParagraphs}
+            </div>
+            <div class="pt-1 flex items-center gap-2 border-t border-slate-200/60">
+              <button type="button" onclick="replayMessage('${safeTextAttr}')"
+                class="inline-flex items-center gap-1.5 text-xs font-semibold text-bav-700 hover:text-bav-800 bg-white hover:bg-bav-50 px-2.5 py-1 rounded-full border border-slate-200 transition active:scale-95">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072M12 6v12l-4.5-4.5H4v-3h3.5L12 6z" />
+                </svg>
+                <span>Escuchar / Repetir</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }
+
+      container.appendChild(wrapper);
+      container.scrollTop = container.scrollHeight;
+
+      if (sender === "assistant" && autoSpeak) {
+        speakText(text);
+      }
+    }
+
+    function replayMessage(encodedText) {
+      const decoded = decodeURIComponent(encodedText);
+      speakText(decoded);
+    }
+
+    function appendTypingIndicator() {
+      const container = document.getElementById("chatMessages");
+      const id = "typing-" + Date.now();
+      const div = document.createElement("div");
+      div.id = id;
+      div.className = "flex items-start gap-3";
+      div.innerHTML = `
+        <div class="w-8 h-8 rounded-2xl bg-gradient-to-br from-bav-500 to-mint-500 text-white font-display font-bold text-xs flex items-center justify-center shrink-0 mt-1">
+          BAV
+        </div>
+        <div class="bg-slate-100 border border-slate-200/70 px-4 py-3.5 rounded-3xl rounded-tl-md flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-bav-500 typing-dot"></span>
+          <span class="w-2 h-2 rounded-full bg-bav-500 typing-dot"></span>
+          <span class="w-2 h-2 rounded-full bg-bav-500 typing-dot"></span>
+        </div>
+      `;
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+      return id;
+    }
+
+    function removeTypingIndicator(id) {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    }
+
+    function setInputsDisabled(disabled) {
+      document.getElementById("userInput").disabled = disabled;
+      document.getElementById("sendButton").disabled = disabled;
+      document.getElementById("micButton").disabled = disabled;
+    }
+
+    function formatAssistantText(text) {
+      const escaped = escapeHTML(text);
+      const withBold = escaped.replace(/\*\*(.*?)\*\*/g, "<strong class='font-semibold text-slate-900'>$1</strong>");
+      return withBold
+        .split(/\n+/)
+        .filter(p => p.trim().length > 0)
+        .map(p => `<p>${p}</p>`)
+        .join("");
+    }
+
+    function escapeHTML(str) {
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    let toastTimeout = null;
+    function showToast(message, icon = "💡") {
+      const banner = document.getElementById("toastBanner");
+      document.getElementById("toastText").textContent = message;
+      document.getElementById("toastIcon").textContent = icon;
+      banner.classList.remove("hidden");
+
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        hideToast();
+      }, 4200);
+    }
+
+    function hideToast() {
+      document.getElementById("toastBanner").classList.add("hidden");
+    }
+  </script>
+</body>
+</html>
